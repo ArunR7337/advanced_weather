@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(45deg, #e3e8e4,#bcd3d4, #9faac3,#817fa0, #667865);
+            animation: gradientBackground 5s infinite alternate;
+            background-size: 400% 400%;
+            overflow: hidden;
+        }
+
+        @keyframes gradientBackground {
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 320px;
+
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .input-container input {
+            padding: 10px;
+            font-size: 1.2em;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            width: 100%;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease-in-out;
+            background-color: #fff;
+        }
+
+        .input-container input:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        .input-container button {
+            padding: 12px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .input-container button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .weather-cards {
+            display: flex;
+            gap: 20px;
+            position: absolute;
+            z-index: 5;
+            top: 80%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .weather-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            color: white;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.6s ease, transform 0.6s ease, background-color 0.6s ease, background-image 0.6s ease;
+            background-size: cover;
+            background-position: center;
+            text-align: center;
+            width: 200px;  /* Smaller width */
+            height: 80px; /* Smaller height */
+            margin-top: 20px;
+        }
+
+        .weather-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .weather-card.left {
+            animation: slideFromLeft 0.8s ease-out;
+        }
+
+        .weather-card.right {
+            animation: slideFromRight 0.8s ease-out;
+        }
+
+        .weather-card.top {
+            animation: slideFromTop 0.8s ease-out;
+        }
+
+        @keyframes slideFromLeft {
+            0% {
+                transform: translateX(-50px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideFromRight {
+            0% {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideFromTop {
+            0% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .card-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 10px;
+            margin-bottom: 5px;
+        }
+
+        .card-description {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .card-info {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .sunny {
+            background-color: rgba(61, 177, 255, 0.9);
+            background-image: url('https://cdn.pixabay.com/photo/2017/06/13/12/29/landscape-2401450_960_720.jpg');
+        }
+
+        .rainy {
+            background-color: rgba(108, 141, 207, 0.9);
+            background-image: url('https://cdn.pixabay.com/photo/2018/03/04/12/46/rain-3198131_960_720.jpg');
+        }
+
+        .cloudy {
+            background-color: rgba(176, 196, 222, 0.9);
+            background-image: url('https://cdn.pixabay.com/photo/2017/06/07/06/33/clouds-2382874_960_720.jpg');
+        }
+
+        .default {
+            background-color: rgba(221, 221, 221, 0.8);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="input-container">
+        <h1>Weather Dashboard</h1>
+        <input type="text" id="cityInput" placeholder="Enter city name" />
+        <button onclick="getWeather()">Get Weather</button>
+    </div>
+
+    <div class="weather-cards">
+        <div class="weather-card" id="weatherCard1">
+            <div class="card-title">Weather Description</div>
+            <div id="weatherDesc">Loading...</div>
+        </div>
+        <div class="weather-card" id="weatherCard2">
+            <div class="card-title">Temperature</div>
+            <div id="temperature">Loading...</div>
+        </div>
+        <div class="weather-card" id="weatherCard3">
+            <div class="card-title">Humidity</div>
+            <div id="humidity">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        async function getWeather() {
+            const city = document.getElementById("cityInput").value;
+            const apiKey = '217b1c9a849082f077d9e9175d65c091'; // Replace with your API Key
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+            if (!city) {
+                alert("Please enter a city name.");
+                return;
+            }
+
+            // Reset cards before updating
+            resetWeatherCards();
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                // Check if city is found
+                if (data.cod === "404") {
+                    alert("City not found!");
+                    return;
+                }
+
+                // Extract data from API response
+                const weatherDesc = data.weather[0].description;
+                const temp = data.main.temp;
+                const humidity = data.main.humidity;
+                const weatherMain = data.weather[0].main.toLowerCase();
+
+                // Update the weather cards with the data
+                document.getElementById("weatherDesc").textContent = weatherDesc;
+                document.getElementById("temperature").textContent = `${temp}°C`;
+                document.getElementById("humidity").textContent = `${humidity}%`;
+
+                // Set background and animation based on weather
+                const weatherCard1 = document.getElementById("weatherCard1");
+                const weatherCard2 = document.getElementById("weatherCard2");
+                const weatherCard3 = document.getElementById("weatherCard3");
+
+                // Set specific class for each card (top, left, right)
+                weatherCard1.classList.add("sunny", "top");
+                weatherCard2.classList.add("rainy", "right");
+                weatherCard3.classList.add("cloudy", "left");
+
+                // Show the weather cards with animation
+                weatherCard1.classList.add("show");
+                weatherCard2.classList.add("show");
+                weatherCard3.classList.add("show");
+
+            } catch (error) {
+                console.error("Error fetching weather data:", error);
+                alert("Error fetching weather data.");
+            }
+        }
+
+        function resetWeatherCards() {
+            // Reset the weather cards before displaying new data
+            const weatherCard1 = document.getElementById("weatherCard1");
+            const weatherCard2 = document.getElementById("weatherCard2");
+            const weatherCard3 = document.getElementById("weatherCard3");
+
+            weatherCard1.classList.remove("show", "sunny", "rainy", "cloudy", "default", "top", "left", "right");
+            weatherCard2.classList.remove("show", "sunny", "rainy", "cloudy", "default", "top", "left", "right");
+            weatherCard3.classList.remove("show", "sunny", "rainy", "cloudy", "default", "top", "left", "right");
+
+            // Reset text content
+            document.getElementById("weatherDesc").textContent = "Loading...";
+            document.getElementById("temperature").textContent = "Loading...";
+            document.getElementById("humidity").textContent = "Loading...";
+        }
+    </script>
+
+</body>
+</html>
